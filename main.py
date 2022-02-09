@@ -1,6 +1,8 @@
 from env_vars import *
 import imaplib
 import email
+from zoneinfo import ZoneInfo
+from datetime import datetime
 from email.header import decode_header
 import requests
 from nsetools import Nse
@@ -54,6 +56,13 @@ def stock_fundamentals(ticker):
                 if y == val:
                     return [key, industry]
 
+def partial_trades(page_id):
+    page_db = requests.get(base_pg_url + page_id, headers=header)
+    page_db_json = page_db.json()
+    units = int(page_db_json['properties']['Units']['number'])
+    buy_price = float(page_db_json['properties']['Buying Price']['number'])
+    return [units, buy_price]
+
 def trade_quality(page_id):
     page_db = requests.get(base_pg_url + page_id, headers=header)
     page_db_json = page_db.json()
@@ -103,7 +112,7 @@ imap.login(username, password)
 status, messages = imap.select("INBOX")
 
 # number of top emails to fetch
-N = 20
+N = 30
 messages = int(messages[0])
 
 for i in range(messages, messages-N, -1):
@@ -117,16 +126,22 @@ for i in range(messages, messages-N, -1):
             date, encoding = decode_header(msg["Date"])[0]
             if isinstance(date, bytes):
                 date = date.decode(encoding)
+
+            # parse date to UTC, then convert to ISO
             date = parser.parse(date)
-            date_iso = date.isoformat()
+            utctime = date.replace(tzinfo=ZoneInfo('UTC'))
+            localtime = utctime.astimezone(ZoneInfo('localtime')) 
+            date_iso = localtime.isoformat()
             date_modified = date_iso[0:10]
+            
+            present = datetime.now()
 
             # decode the email subject
             subject, encoding = decode_header(msg["Subject"])[0]
             if isinstance(subject, bytes):
                 subject = subject.decode(encoding)
 
-            if subject.__contains__('BOUGHT'):
+            if subject.__contains__('BOUGHT') and localtime.date() == present.date():
                 res = subject.split()
                 units = int(res[1])
                 ticker = res[2]
@@ -149,7 +164,35 @@ for i in range(messages, messages-N, -1):
                 response_db = requests.post(
                     base_db_url + trading_database_id + "/query", headers=header)
 
-                if company_ticker not in existing_trades:
+                existing_trade = {}
+
+                for page in response_db.json()["results"]:
+                    page_id = page["id"]
+                    props = page['properties']
+                    ticker_check = props['Ticker']['rich_text']
+                    if ticker_check:
+                        ticker = props['Ticker']['rich_text'][0]['text']['content']
+                        checkbox_state = props['Trade Status']['checkbox']
+                    if checkbox_state is False:
+                        existing_trade[ticker] = page_id
+
+                if company_ticker in existing_trade:
+                    page_id = existing_trade[company_ticker]
+                    partial = partial_trades(page_id)
+                    if units != partial[0]:
+                        updated_units = units + partial[0]
+                        updated_buying_price = float(buying_price*units + partial[1]*partial[0]) // updated_units
+                        
+                        update_partial_trade = {
+                            "properties": {
+                                "Buying Price": {"number": updated_buying_price},
+                                "Units": {"number": updated_units}
+                            }
+                        }
+                        update_trade = requests.patch(
+                            base_pg_url + page_id, headers=header, json=update_partial_trade)
+                        
+                if company_ticker not in existing_trade:
                     add_payload = {
                         "parent": {
                             "database_id": NOTION_TRADING_DB
@@ -190,7 +233,7 @@ for i in range(messages, messages-N, -1):
                     add_trade = requests.post(
                         base_pg_url, headers=header, json=add_payload)
 
-            if subject.__contains__('SOLD'):
+            if subject.__contains__('SOLD') and localtime.date() == present.date():
                 res = subject.split()
                 ticker = res[2]
                 units_sold = int(res[1])
