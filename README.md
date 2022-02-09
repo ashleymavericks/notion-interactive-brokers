@@ -1,11 +1,13 @@
 # Notion Trading Journal
-A python script to automatically journal nse stock trades from Interactive Brokers trading account
+A python script to automatically journal NSE stock trades using Interactive Brokers trading account email notifications
 
-## Features:
-- Journal provides insights like Stock type (largecap/smallcap....etc.), Sector, Industry for a given stock ticker
+## Features: 
+- Journal provides insights like Stock type (largecap/midcap....etc.), Sector, Industry for a given stock ticker
 - Auto update latest price and percentage change for ongoing trades
 - Display current loss/gain and realised loss/gain for a particular trade
 - Manage partial buy and sell trades edge cases as well
+- Provides holding time period for each trade in Days
+- Classify trades to different categories based on percentage of loss/gain and holding period
 
 ## Requirements:
 
@@ -19,4 +21,4 @@ pip3 install requests nsetools yfinance
 ```
 */15 9-15 * * 1-5
 ```
-A [cron job](https://crontab.guru/#*/15_9-15_*_*_1-5) running At every 15th minute past every hour from 9 through 15 on every day-of-week from Monday through Friday, as Indian Markets are open on weekdays only - thus why waste system resources.
+A [cron job](https://crontab.guru/#*/15_9-15_*_*_1-5) running At every 15th minute past every hour from 9 through 15 on every day-of-week from Monday through Friday, as Indian Markets are open on only on weekdays.
