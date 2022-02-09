@@ -5,7 +5,6 @@ A python script to automatically journal NSE stock trades using Interactive Brok
 - Journal provides insights like Stock type (largecap/midcap....etc.), Sector, Industry for a given stock ticker
 - Auto update latest price and percentage change for ongoing trades
 - Display current loss/gain and realised loss/gain for a particular trade
-- Manage partial buy and sell trades edge cases as well
 - Provides holding time period for each trade in Days
 - Classify trades to different categories based on percentage of loss/gain and holding period
 
