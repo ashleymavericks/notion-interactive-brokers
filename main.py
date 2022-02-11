@@ -48,8 +48,7 @@ MicroCap = stock_type_classification(microcap_file)
 def stock_fundamentals(ticker):
     modified_ticker = ticker + '.NS'
     quote = yf.Ticker(modified_ticker)
-    ticker_info = quote.info
-    industry = ticker_info['industry']
+    industry = quote.info['industry']
     for y in LargeCap,MidCap,SmallCap,MicroCap:
         if ticker in y:
             for key,val in globals().items():
