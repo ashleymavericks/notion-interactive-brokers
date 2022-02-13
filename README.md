@@ -1,5 +1,5 @@
 # Notion Trading Journal
-A python script to automatically journal NSE stock trades by leveraging Stock Broker's email notifications for the buy/sell trades.
+A python script to automatically journal NSE stock trades by leveraging Interactive Broker email notifications for the buy/sell trades.
 
 ## Features: 
 - Journal provides insights like Stock type (largecap/midcap....etc.), Sector, Industry for a given stock ticker
