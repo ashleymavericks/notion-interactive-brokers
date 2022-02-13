@@ -7,7 +7,7 @@ A python script to automatically journal NSE stock trades by leveraging Interact
 - Display current loss/gain and realised loss/gain for a particular trade
 - Provides holding time period for each trade in Days
 - Classify trades to different categories based on percentage of loss/gain and holding period
-- Manage edge cases like buy/sell trades notifications (partial trades)
+- Manage edge cases like partial buy/sell trades notifications
 
 ## Requirements:
 
