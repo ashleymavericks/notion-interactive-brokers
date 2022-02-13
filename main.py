@@ -85,6 +85,7 @@ response_stocks_db = requests.post(
 
 existing_trades = {}
 
+# Update the current price of ongoing trades
 for page in response_stocks_db.json()["results"]:
     page_id = page["id"]
     props = page['properties']
