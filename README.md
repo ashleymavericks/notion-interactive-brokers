@@ -19,6 +19,8 @@ pip3 install requests nsetools yfinance
 
 ## Script Automation:
 ```
-*/15 9-15 * * 1-5
+35 15 * * 1-5
 ```
-A [cron job](https://crontab.guru/#*/15_9-15_*_*_1-5) running At every 15th minute past every hour from 9 through 15 on every day-of-week from Monday through Friday, as Indian Markets are open on only on weekdays.
+A [cron job](https://crontab.guru/#35_15_*_*_1-5) running at 15:35 on every day-of-week from Monday through Friday, will gather all the buy/sell trades emails and journal them post market-closing. 
+
+P.S. In case, you wants to keep the current price updated for the ongoing trades, just grab the relevant section from the [main.py](https://github.com/ashleymavericks/notion-trading/blob/master/main.py) and set a recurring cron job during the market hours.
