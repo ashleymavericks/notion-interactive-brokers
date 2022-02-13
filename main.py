@@ -73,7 +73,7 @@ def trade_quality(page_id):
     if loss_gain_percent > 9 and holding_period <= 10:
         quality = 'Great'
     elif loss_gain_percent >= 0.5:
-        quality = 'Good'
+        quality = 'Gain'
     elif loss_gain_percent >= -7:
         quality = 'Loss'
     else:
