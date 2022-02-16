@@ -148,10 +148,15 @@ for i in range(messages, messages-N, -1):
                 buying_price = float(res[5])
 
                 # fuzzy match on dict keys to get the accurate ticker
-                company_quote = [
-                    (key, value) for key, value in all_stock_codes.items() if ticker in key]
-                company_ticker = company_quote[0][0]
-                company_name = company_quote[0][1]
+                if len(ticker) < 6:
+                    company_ticker = ticker
+                    company_name = all_stock_codes[ticker]  
+
+                else:
+                    company_quote = [
+                        (key, value) for key, value in all_stock_codes.items() if ticker in key]
+                    company_ticker = company_quote[0][0]
+                    company_name = company_quote[0][1]
 
                 # removing "Limited" | "Ltd" from company name
                 company_name = company_name.replace("Limited", "")
