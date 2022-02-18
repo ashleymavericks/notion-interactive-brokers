@@ -10,6 +10,7 @@ A python script to automatically journal NSE stock trades by leveraging Interact
 - Manage edge cases like partial buy/sell trades notifications
 
 ## Requirements:
+[Interactive Brokers Account](https://ibkr.com/referral/saroj513)
 
 ```bash
 pip3 install requests nsetools yfinance
