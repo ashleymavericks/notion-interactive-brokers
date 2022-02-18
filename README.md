@@ -1,4 +1,4 @@
-# Notion Trading Journal
+# Notion IBKR Trading Journal
 A python script to automatically journal NSE stock trades by leveraging Interactive Broker email notifications for the buy/sell trades.
 
 ## Features: 
