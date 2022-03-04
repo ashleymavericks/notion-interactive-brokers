@@ -49,6 +49,7 @@ def stock_fundamentals(ticker):
     modified_ticker = ticker + '.NS'
     quote = yf.Ticker(modified_ticker)
     industry = quote.info['industry']
+    #finding the name of the list that contains ticker
     for y in LargeCap,MidCap,SmallCap,MicroCap:
         if ticker in y:
             for key,val in globals().items():
@@ -244,9 +245,14 @@ for i in range(messages, messages-N, -1):
                 units_sold = int(res[1])
                 selling_price = float(res[5])
 
-                company_quote = [
-                    (key, value) for key, value in all_stock_codes.items() if ticker in key]
-                company_ticker = company_quote[0][0]
+                 # fuzzy match on dict keys to get the accurate ticker
+                if len(ticker) < 6:
+                    company_ticker = ticker
+
+                else:
+                    company_quote = [
+                        (key, value) for key, value in all_stock_codes.items() if ticker in key]
+                    company_ticker = company_quote[0][0]
 
                 if company_ticker in existing_trades:
                     page_id = existing_trades[company_ticker]
