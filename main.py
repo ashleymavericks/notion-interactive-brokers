@@ -22,21 +22,20 @@ header = {"Authorization": secret_key,
           "Notion-Version": "2021-05-13", "Content-Type": "application/json"}
 
 nse = Nse()
-all_stock_codes = nse.get_stock_codes()
+all_stock_codes = {}
 
-largecap_file = open('assets/ind_nifty100list.csv')
-midcap_file = open('assets/ind_niftymidcap150list.csv')
-smallcap_file = open('assets/ind_niftysmallcap250list.csv')
-microcap_file = open('assets/ind_niftymicrocap250_list.csv')
+largecap_file = open('./assets/ind_nifty100list.csv')
+midcap_file = open('./assets/ind_niftymidcap150list.csv')
+smallcap_file = open('./assets/ind_niftysmallcap250list.csv')
+microcap_file = open('./assets/ind_niftymicrocap250_list.csv')
+etf_file = open('./assets/ind_etf_list.csv')
 
 def stock_type_classification(stock_type):
     csvreader = csv.reader(stock_type)
-    rows = []
-    stock_list = []
+    stock_list = [] 
     for row in csvreader:
-        rows.append(row)   
-    for column in rows:
-        stock_list.append(column[2])
+        stock_list.append(row[2])
+        all_stock_codes[row[2]] = row[0]
     stock_type.close()
     return stock_list
 
@@ -44,13 +43,18 @@ LargeCap = stock_type_classification(largecap_file)
 MidCap = stock_type_classification(midcap_file)
 SmallCap = stock_type_classification(smallcap_file)
 MicroCap = stock_type_classification(microcap_file)
+ETF = stock_type_classification(etf_file)
 
 def stock_fundamentals(ticker):
     modified_ticker = ticker + '.NS'
     quote = yf.Ticker(modified_ticker)
     industry = quote.info['industry']
-    #finding the name of the list that contains ticker
-    for y in LargeCap,MidCap,SmallCap,MicroCap:
+
+    if not industry:
+        industry = 'Index Funds'
+    
+    # finding the name of the list that contains ticker
+    for y in LargeCap,MidCap,SmallCap,MicroCap,ETF:
         if ticker in y:
             for key,val in globals().items():
                 if y == val:
@@ -75,7 +79,7 @@ def trade_quality(page_id):
         quality = 'Great'
     elif loss_gain_percent >= 0.5:
         quality = 'Gain'
-    elif loss_gain_percent >= -7:
+    elif loss_gain_percent >= -6.9:
         quality = 'Loss'
     else:
         quality = 'Worst'
@@ -86,7 +90,6 @@ response_stocks_db = requests.post(
 
 existing_trades = {}
 
-# Update the current price of ongoing trades
 for page in response_stocks_db.json()["results"]:
     page_id = page["id"]
     props = page['properties']
@@ -97,13 +100,23 @@ for page in response_stocks_db.json()["results"]:
         if checkbox_state is False:
             existing_trades[ticker] = page_id
             quote = nse.get_quote(ticker)
-            current_price = quote['lastPrice']
-            percent_change = float(quote['pChange'])
-            price_payload = {"properties":{
-                "Current Price": {"number": current_price},
-                "1D": {"number": percent_change}
+
+            if not quote:
+                modified_ticker = ticker + '.NS'
+                quote = yf.Ticker(modified_ticker)
+                current_price = quote.info['currentPrice']
+                price_payload = {"properties":{
+                    "Current Price": {"number": current_price}
+                    }
                 }
-            }
+            else:
+                current_price = quote['lastPrice']
+                percent_change = float(quote['pChange'])
+                price_payload = {"properties":{
+                    "Current Price": {"number": current_price},
+                    "1D": {"number": percent_change}
+                    }
+                }
             update_trade = requests.patch(
                         base_pg_url + page_id, headers=header, json=price_payload)
 
@@ -134,14 +147,14 @@ for i in range(messages, messages-N, -1):
             localtime = utctime.astimezone(ZoneInfo('localtime')) 
             date_iso = localtime.isoformat()
             date_modified = date_iso[0:10]
-            
             present = datetime.now()
 
             # decode the email subject
-            subject, encoding = decode_header(msg["Subject"])[0]
+            subject, encoding = decode_header(msg['Subject'])[0]
             if isinstance(subject, bytes):
                 subject = subject.decode(encoding)
 
+            # Buy trades section begin
             if subject.__contains__('BOUGHT') and localtime.date() == present.date():
                 res = subject.split()
                 units = int(res[1])
@@ -162,7 +175,7 @@ for i in range(messages, messages-N, -1):
                 # removing "Limited" | "Ltd" from company name
                 company_name = company_name.replace("Limited", "")
                 company_name = company_name.replace("Ltd", "")
-
+                
                 ticker_info = stock_fundamentals(company_ticker)
                 stock_type = ticker_info[0]
                 industry = ticker_info[1]
@@ -239,6 +252,7 @@ for i in range(messages, messages-N, -1):
                     add_trade = requests.post(
                         base_pg_url, headers=header, json=add_payload)
 
+            # Sell trades section begin
             if subject.__contains__('SOLD') and localtime.date() == present.date():
                 res = subject.split()
                 ticker = res[2]
