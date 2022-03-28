@@ -1,4 +1,5 @@
 Company Name,Industry,Symbol
-Nippon Nifty 50,Index,NIFTYBEES
-Nippon Nifty Midcap 150,Index,NETFMID150
-Kotak Alpha 50,Index,KOTAKALPHA
+Nippon Nifty 50,Broad Market Index,NIFTYBEES
+Nippon Nifty Midcap 150,Broad Market Index,NETFMID150
+Kotak Alpha 50,Strategy Index,KOTAKALPHA
+Central Public Sector Enterprises,Thematic Index,CPSEETF

@@ -23,6 +23,7 @@ header = {"Authorization": secret_key,
 
 nse = Nse()
 all_stock_codes = {}
+all_industry_codes = {}
 
 largecap_file = open('./assets/ind_nifty100list.csv')
 midcap_file = open('./assets/ind_niftymidcap150list.csv')
@@ -36,6 +37,7 @@ def stock_type_classification(stock_type):
     for row in csvreader:
         stock_list.append(row[2])
         all_stock_codes[row[2]] = row[0]
+        all_industry_codes[row[2]] = row[1]
     stock_type.close()
     return stock_list
 
@@ -46,17 +48,12 @@ MicroCap = stock_type_classification(microcap_file)
 ETF = stock_type_classification(etf_file)
 
 def stock_fundamentals(ticker):
-    modified_ticker = ticker + '.NS'
-    quote = yf.Ticker(modified_ticker)
-    industry = quote.info['industry']
+    industry = all_industry_codes[ticker]
 
-    if not industry:
-        industry = 'Index Funds'
-    
     # finding the name of the list that contains ticker
-    for y in LargeCap,MidCap,SmallCap,MicroCap,ETF:
+    for y in LargeCap, MidCap, SmallCap, MicroCap, ETF:
         if ticker in y:
-            for key,val in globals().items():
+            for key, val in globals().items():
                 if y == val:
                     return [key, industry]
 
